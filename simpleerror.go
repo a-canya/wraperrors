@@ -1,9 +1,11 @@
 package wraperrors
 
-// SimpleError returns a simple error useful to define constant simple errors that will wrap other errors.
+// SimpleError is a simple string error. It is specially useful to define constant errors and to wrap another other to
+// create a "wrap error".
 //
 // ```go
-// const MyError = wraperrors.SimpleError("my error message")
+// const MyError = wraperrors.SimpleError("something went wrong")
+// var wrapErr = wraperrors.SimpleError("program will shut down").Wrap(MyError)
 // ```
 type SimpleError string
 

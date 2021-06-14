@@ -19,35 +19,46 @@ wrapErr := wraperrors.New(wrapperErr, wrappedErr)
 The package also provides a SimpleError type which is useful to create wrap errors that will have the simple error as
 the wrapper.
 
-The main difference between wraperrors and standard wrap errors (`fmt.Errorf("something went wrong, %w", err1)`)
-is that wraperrors allow to easily compare the wrapper error:
+The main difference between wraperrors and standard wrap errors (`fmt.Errorf("something went wrong: %w", err1)`)
+is that wraperrors allow to compare the wrapper error regardless of the wrapped error(s):
 
 ```go
+// package xxx
+func GetSomethingFromTheInternet() ([]byte, error) { ... }
+
+// package yyy
 const (
 	BadRequestError = wraperrors.SimpleError("bad request error")
 	ConnectionError = wraperrors.SimpleError("temporal error, try later")
 	InternalError   = wraperrors.SimpleError("internal error")
 )
 
-func f() error {
-	_, err := getSomethingFromTheInternet()
-	if err == ConnectionTimeOut {
+// F processes some stuff from the internet. It can return three possible wrap errors
+func F() error {
+	sth, err := xxx.GetSomethingFromTheInternet()
+	if errors.Is(err, xxx.ConnectionTimeOut) {
 		return ConnectionError.Wrap(err)
-	} else if err == UnexpectedCharacter || err == MissingArguments {
+	} else if errors.Is(err, xxx.UnexpectedCharacter) || errors.Is(err, xxx.MissingArguments) {
 		return BadRequestError.Wrap(err)
 	} else if err != nil {
 		return InternalError.Wrap(err)
 	}
+
+	// do something with sth
+
 	return nil
 }
 
-err := f()
-if errors.Is(err, ConnectionError) {
-	// retry after timeout
-} else if errors.Is(err, BadRequestError) {
-	// logic for bad request
-} else {
-	// logic for internal error
+// package zzz
+func G() {
+	err := yyy.F()
+	if errors.Is(err, ConnectionError) {
+		// retry after timeout
+	} else if errors.Is(err, BadRequestError) {
+		// logic for bad request
+	} else {
+		// logic for internal error
+	}
 }
 ```
 */

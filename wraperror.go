@@ -24,9 +24,14 @@ func (err *wrapError) Error() string {
 // interface, and allows wrap errors to be compared using `errors.Is(myWrapError, anyOtherError)`
 //
 // A wrap error is equal to a target error if:
+//
 // (a) the wrap error is exactly equal (== operator) to the target error,
+//
 // (b) the wrapper error is equal to the target error using the errors.Is function, or
+//
 // (c) the wrapped error is equal to the target error using the errors.Is function
+//
+// (notice that b and c differ on the word wrapper/wrapped)
 func (err *wrapError) Is(target error) bool {
 	return err == target || errors.Is(err.wrapper, target) || errors.Is(err.wrapped, target)
 }
